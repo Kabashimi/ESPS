@@ -1,0 +1,3 @@
+/home/pi/Documents/Projekt_ESPS/ESPS/CMakeFiles/rebuild_cache.dir
+/home/pi/Documents/Projekt_ESPS/ESPS/CMakeFiles/edit_cache.dir
+/home/pi/Documents/Projekt_ESPS/ESPS/CMakeFiles/DisplayCamera.dir
