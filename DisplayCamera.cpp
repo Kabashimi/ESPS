@@ -7,6 +7,10 @@
 using namespace std;
 using namespace cv;
 #define LED 23
+#define WIDTH 500
+#define HEIGHT 500
+
+Vec3f lastDetectedHole;
 
 void displayInfo(string data){
 	cout << data << endl;
@@ -65,10 +69,10 @@ vector<Vec3f> calibrateTarget(VideoCapture cap){
 		circle(frame1, center, radius, Scalar(0,0,255), 3, 8, 0);
 	}
         
-    namedWindow("edges",1);
+    namedWindow("target",1);
     for(;;)
     { 
-        imshow("edges", frame1); //frame is captured, edge is edited Map(edges detection)
+        imshow("target", frame1); //frame is captured, edge is edited Map(edges detection)
         if(waitKey(30) >= 0) break;
     }
 
@@ -78,7 +82,7 @@ vector<Vec3f> calibrateTarget(VideoCapture cap){
 }
 
 Mat trasnformImage(Mat src, vector<Vec3f> points){
-	Mat dst = src;
+	Mat dst = Mat(HEIGHT, WIDTH, src.type());
 	Point2f inputQuad[4];
 	Point2f outputQuad[4];
 	Mat lambda(2,4, CV_32FC1);
@@ -90,23 +94,61 @@ Mat trasnformImage(Mat src, vector<Vec3f> points){
 	inputQuad[3] = Point2f(points[3][0], points[3][1]);
 	
 	outputQuad[0] = Point2f(0,0);
-	outputQuad[1] = Point2f(src.cols-1,0);
-	outputQuad[2] = Point2f(src.cols-1,src.rows-1);
-	outputQuad[3] = Point2f(0,src.rows-1);
+	outputQuad[1] = Point2f(WIDTH-1,0);
+	outputQuad[2] = Point2f(WIDTH-1,HEIGHT-1);
+	outputQuad[3] = Point2f(0,HEIGHT-1);
 
 	
 	lambda = getPerspectiveTransform(inputQuad, outputQuad);
 	warpPerspective(src, dst, lambda, dst.size());
 	
 	//Display image       
-    namedWindow("edges",1);
+	
+    namedWindow("target",1);
     for(;;)
     { 
-        imshow("edges", dst); //frame is captured, edge is edited Map(edges detection)
+        imshow("target", dst); //frame is captured, edge is edited Map(edges detection)
         if(waitKey(30) >= 0) break;
     }
     
     return dst;
+}
+
+bool FindHole(Mat frame){
+	vector<Vec3f> circles;
+	
+	Mat org = frame; //this var is for presentation purpose only!
+	
+	cvtColor(frame, frame, COLOR_BGR2GRAY);
+    GaussianBlur(frame, frame, Size(7,7), 1.5, 1.5);
+    Canny(frame, frame, 0, 30, 3);
+        
+    GaussianBlur(frame, frame, Size(7,7), 4,4);
+	HoughCircles(frame, circles, CV_HOUGH_GRADIENT, 1, 100, 30, 20, 10, 20);
+	
+	//Display detected circles
+	for(size_t i = 0;i<circles.size(); i++){
+		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+		int radius = cvRound(circles[i][2]);
+		circle(org, center, 3, Scalar(0,255,0), -1, 8, 0);
+		circle(org, center, radius, Scalar(0,0,255), 3, 8, 0);
+	}
+        
+    namedWindow("target",1);
+    for(;;)
+    { 
+        imshow("target", org);
+        if(waitKey(30) >= 0) break;
+    }
+    
+    
+    if(circles.size()>0){
+		lastDetectedHole = circles[0];
+		return true;
+	}else{
+		return false;
+	}
+
 }
 
 void destroyer(){
@@ -117,6 +159,7 @@ int main(int, char**)
 {
 	vector<Vec3f> cornerPoints;
 	Mat emptyTarget;
+	Mat actualFrame;
 	Mat frame;
 	
 	setup();
@@ -127,8 +170,18 @@ int main(int, char**)
 	}
     
     cornerPoints = calibrateTarget(cap);
+    //TODO make sure points are in counterclock order!
     cap >> frame;
     emptyTarget = trasnformImage(frame, cornerPoints);
+    
+    do{
+		cap >> frame;
+		actualFrame = trasnformImage(frame, cornerPoints);
+		if(FindHole(actualFrame)){
+			cout << lastDetectedHole[0] << endl << lastDetectedHole[1] << endl;
+		}
+		
+	}while(true);
     
 	
 	
