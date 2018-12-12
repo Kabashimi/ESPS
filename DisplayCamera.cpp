@@ -26,6 +26,47 @@ void turnLed(bool status){
 	gpioWrite(LED, status);
 }
 
+vector<Vec3f> sortEdgePoints(vector<Vec3f> input){
+	vector<Vec3f> output;
+	double max=0;
+	int maxid;
+	double min = 2500;
+	int minid;
+	double sum;
+	int tmp;
+	for(int i=0;i<4;i++){
+		sum = input[i][0]+input[i][1];
+		cout << input[i][0] << ":" << input[i][1] << endl;
+		
+		if(sum>max){
+			max = sum;
+			maxid = i;
+		}
+		if(sum<min){
+			min = sum;
+			minid = i;
+		}
+	}
+	//left=top point
+	output.push_back(input[minid]);
+	for(int i=0;i<4;i++){
+		if(i == minid || i == maxid){
+			continue;
+		}
+		if(input[i][0]>input[minid][0] && input[i][1]<input[maxid][1]){
+			//right-top point
+			output.push_back(input[i]);
+		}else{
+			//left-bottom
+			tmp = i;
+		}
+	}
+	output.push_back(input[maxid]);
+	output.push_back(input[tmp]);
+	return output;
+	
+}
+
 vector<Vec3f> calibrateTarget(VideoCapture cap){
 	Mat frame1;
 	Mat frame2;
@@ -49,6 +90,39 @@ vector<Vec3f> calibrateTarget(VideoCapture cap){
 	HoughCircles(diff, circles, CV_HOUGH_GRADIENT, 1, 100, 30, 20, 10, 20);
 	displayInfo("Kalibrowanie tarczy, wykrytych punktów: "+ to_string(circles.size()));
 	}while(circles.size()!=4);
+	
+	Point c(200,100);
+	int r = 50;
+	
+	circle(frame1, c, r, Scalar(0,0,255), 3, 8, 0);
+	
+	//Display detected circles
+	for(size_t i = 0;i<circles.size(); i++){
+		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+		int radius = cvRound(circles[i][2]);
+		if(i ==1 ){
+			//yellow
+			circle(frame1, center, 3, Scalar(0,255,255), -1, 8, 0);
+		}
+		if(i ==2 ){
+			//white
+			circle(frame1, center, 3, Scalar(255,255,255), -1, 8, 0);
+		}
+		if(i ==3 ){
+			//blue
+			circle(frame1, center, 3, Scalar(255,0,0), -1, 8, 0);
+		}
+		circle(frame1, center, radius, Scalar(0,0,255), 3, 8, 0);
+	}
+        
+    namedWindow("target",1);
+    for(;;)
+    { 
+        imshow("target", frame1); //frame is captured, edge is edited Map(edges detection)
+        if(waitKey(30) >= 0) break;
+    }
+	
+	circles = sortEdgePoints(circles);
 	
 	//Display detected circles
 	for(size_t i = 0;i<circles.size(); i++){
@@ -76,7 +150,7 @@ vector<Vec3f> calibrateTarget(VideoCapture cap){
         if(waitKey(30) >= 0) break;
     }
 
-
+	
     return circles;
     //points order: top-left, top-right, bottom-right, bottom-left (clockwise)
 }
@@ -165,7 +239,8 @@ int main(int, char**)
 	setup();
 	
 	VideoCapture cap(0); // open the default camera
-    if(!cap.isOpened()){  // check if we succeeded
+    if(!cap.isOpened()){  // check if we "succeeded
+		displayInfo("Opening camera error");
         return -1;
 	}
     
