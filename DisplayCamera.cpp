@@ -37,8 +37,6 @@ vector<Vec3f> sortEdgePoints(vector<Vec3f> input) {
 	int tmp;
 	for (int i = 0; i < 4; i++) {
 		sum = input[i][0] + input[i][1];
-		cout << input[i][0] << ":" << input[i][1] << endl;
-
 		if (sum > max) {
 			max = sum;
 			maxid = i;
@@ -95,34 +93,6 @@ vector<Vec3f> calibrateTarget(VideoCapture cap) {
 
 	Point c(200, 100);
 	int r = 50;
-
-	circle(frame1, c, r, Scalar(0, 0, 255), 3, 8, 0);
-
-	//Display detected circles
-	for (size_t i = 0; i < circles.size(); i++) {
-		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
-		int radius = cvRound(circles[i][2]);
-		if (i == 1) {
-			//yellow
-			circle(frame1, center, 3, Scalar(0, 255, 255), -1, 8, 0);
-		}
-		if (i == 2) {
-			//white
-			circle(frame1, center, 3, Scalar(255, 255, 255), -1, 8, 0);
-		}
-		if (i == 3) {
-			//blue
-			circle(frame1, center, 3, Scalar(255, 0, 0), -1, 8, 0);
-		}
-		circle(frame1, center, radius, Scalar(0, 0, 255), 3, 8, 0);
-	}
-
-	namedWindow("target", 1);
-	for (;;)
-	{
-		imshow("target", frame1); //frame is captured, edge is edited Map(edges detection)
-		if (waitKey(30) >= 0) break;
-	}
 
 	circles = sortEdgePoints(circles);
 
@@ -241,7 +211,7 @@ vector<double> CalculateHoleCoords() {
 
 
 	//obliczanie promienia
-	radius = sqrt(pow(lastDetectedHole[0] - center_X,2) + pow(lastDetectedHole[1] - center_Y,2))
+	radius = sqrt(pow(lastDetectedHole[0] - center_X,2) + pow(lastDetectedHole[1] - center_Y,2));
 
 		if (radius > 0) {
 			//ustalenie ćwiartki
