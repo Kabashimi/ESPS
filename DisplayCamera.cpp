@@ -92,9 +92,6 @@ vector<Vec3f> calibrateTarget(VideoCapture cap) {
 		displayInfo("Kalibrowanie tarczy, wykrytych punktów: " + to_string(circles.size()));
 	} while (circles.size() != 4);
 
-	Point c(200, 100);
-	int r = 50;
-
 	circles = sortEdgePoints(circles);
 
 	//Display detected circles
@@ -149,15 +146,6 @@ Mat trasnformImage(Mat src, vector<Vec3f> points) {
 	lambda = getPerspectiveTransform(inputQuad, outputQuad);
 	warpPerspective(src, dst, lambda, dst.size());
 
-	//Display image       
-
-	namedWindow("target", 1);
-	for (;;)
-	{
-		imshow("target", dst); //frame is captured, edge is edited Map(edges detection)
-		if (waitKey(30) >= 0) break;
-	}
-
 	return dst;
 }
 
@@ -174,6 +162,18 @@ bool FindHole(Mat frame) {
 	HoughCircles(frame, circles, CV_HOUGH_GRADIENT, 1, 100, 30, 20, 10, 20);
 
 	//Display detected circles
+	
+	
+	Point c(WIDTH / 2, HEIGHT / 2);
+	int r = 27.5/2;
+	circle(org, c,r, Scalar(255,255,0), 1,8,0);
+	r = 52.5/2;
+	circle(org, c,r, Scalar(255,255,0), 1,8,0);
+	r = 77.5/2;
+	circle(org, c,r, Scalar(255,255,0), 1,8,0);
+	r = 102.5/2;
+	circle(org, c,r, Scalar(255,255,0), 1,8,0);
+	
 	for (size_t i = 0; i < circles.size(); i++) {
 		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
 		int radius = cvRound(circles[i][2]);
@@ -202,9 +202,14 @@ bool FindHole(Mat frame) {
 double CalculateValue(double radius) {
 	double maxValue = 10.9;
 	double vStep = WIDTH / 100; //stosunek rozmiaru tarczy w milimetrach i obrazu w pikselach
-
+	vStep = vStep/0.2; //odległość między kolejnymi punktami w milimatrach
 	double tmp = ceil(radius / vStep);
 	double value = 10.9 - tmp;
+	cout << vStep <<endl;
+	cout << tmp << endl;
+	if(value <0){
+		value =0;
+	}
 	return value;
 }
 
@@ -289,7 +294,7 @@ int main(int, char**)
 		if (FindHole(actualFrame)) {
 			cout << lastDetectedHole[0] << endl << lastDetectedHole[1] << endl;
 			//TODO wywołaj calculateHoleCoords():
-			strike = calculateHoleCoords();
+			strike = CalculateHoleCoords();
 		}
 
 	} while (true);
