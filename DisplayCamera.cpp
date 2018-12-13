@@ -241,7 +241,7 @@ vector<double> CalculateHoleCoords() {
 
 
 	//obliczanie promienia
-	radius = sqrt(pow(lastDetectedHole[0] - center_X) + pow(lastDetectedHole[1] - center_Y))
+	radius = sqrt(pow(lastDetectedHole[0] - center_X,2) + pow(lastDetectedHole[1] - center_Y,2))
 
 		if (radius > 0) {
 			//ustalenie ćwiartki
@@ -260,8 +260,7 @@ vector<double> CalculateHoleCoords() {
 			
 			//obliczanie sinusa
 			sinus = abs(lastDetectedHole[1] - center_Y) / radius;
-		}
-		else {
+		} else {
 			sinus = 0;
 			quarter = 1;
 		}
