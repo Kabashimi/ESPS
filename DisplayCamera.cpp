@@ -11,6 +11,7 @@ using namespace cv;
 #define WIDTH 500
 #define HEIGHT 500
 
+
 Vec3f lastDetectedHole;
 
 void displayInfo(string data) {
@@ -199,7 +200,12 @@ bool FindHole(Mat frame) {
 }
 
 double CalculateValue(double radius) {
-	return 10.0;
+	double maxValue = 10.9;
+	double vStep = WIDTH / 100; //stosunek rozmiaru tarczy w milimetrach i obrazu w pikselach
+
+	double tmp = ceil(radius / vStep);
+	double value = 10.9 - tmp;
+	return value;
 }
 
 vector<double> CalculateHoleCoords() {
@@ -211,29 +217,30 @@ vector<double> CalculateHoleCoords() {
 
 
 	//obliczanie promienia
-	radius = sqrt(pow(lastDetectedHole[0] - center_X,2) + pow(lastDetectedHole[1] - center_Y,2));
+	radius = sqrt(pow(lastDetectedHole[0] - center_X, 2) + pow(lastDetectedHole[1] - center_Y, 2));
 
-		if (radius > 0) {
-			//ustalenie ćwiartki
-			if (lastDetectedHole[0] > center_X && lastDetectedHole[1] < center_Y) {
-				quarter = 1;
-			}
-			if (lastDetectedHole[0] < center_X && lastDetectedHole[1] < center_Y) {
-				quarter = 2;
-			}
-			if (lastDetectedHole[0] < center_X && lastDetectedHole[1] > center_Y) {
-				quarter = 3;
-			}
-			if (lastDetectedHole[0] > center_X && lastDetectedHole[1] > center_Y) {
-				quarter = 4;
-			}
-			
-			//obliczanie sinusa
-			sinus = abs(lastDetectedHole[1] - center_Y) / radius;
-		} else {
-			sinus = 0;
+	if (radius > 0) {
+		//ustalenie ćwiartki
+		if (lastDetectedHole[0] > center_X && lastDetectedHole[1] < center_Y) {
 			quarter = 1;
 		}
+		if (lastDetectedHole[0] < center_X && lastDetectedHole[1] < center_Y) {
+			quarter = 2;
+		}
+		if (lastDetectedHole[0] < center_X && lastDetectedHole[1] > center_Y) {
+			quarter = 3;
+		}
+		if (lastDetectedHole[0] > center_X && lastDetectedHole[1] > center_Y) {
+			quarter = 4;
+		}
+
+		//obliczanie sinusa
+		sinus = abs(lastDetectedHole[1] - center_Y) / radius;
+	}
+	else {
+		sinus = 0;
+		quarter = 1;
+	}
 
 	double value = CalculateValue(radius);
 
@@ -242,6 +249,11 @@ vector<double> CalculateHoleCoords() {
 	result.push_back(radius);
 	result.push_back(sinus);
 	result.push_back(quarter);
+
+	cout << "Trafienie: " << value << endl;
+	cout << "R = " << radius << endl;
+	cout << "Sin = " << sinus << endl;
+	cout << "Q = " << quarter << endl;
 
 	return result;
 }
@@ -256,6 +268,7 @@ int main(int, char**)
 	Mat emptyTarget;
 	Mat actualFrame;
 	Mat frame;
+	vector<double> strike;
 
 	setup();
 
@@ -275,7 +288,8 @@ int main(int, char**)
 		actualFrame = trasnformImage(frame, cornerPoints);
 		if (FindHole(actualFrame)) {
 			cout << lastDetectedHole[0] << endl << lastDetectedHole[1] << endl;
-			//TODO wywołaj calculateHoleCoords()
+			//TODO wywołaj calculateHoleCoords():
+			strike = calculateHoleCoords();
 		}
 
 	} while (true);
