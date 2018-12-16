@@ -317,15 +317,18 @@ int main(int, char**)
 */
 	MYSQL *con;
 	con = mysql_init(NULL);
-	if(mysql_real_connect(con, "localhost","root","passwd",NULL, 0, NULL, 0)==NULL){
-		cout << "null" << endl;
+	if(mysql_real_connect(con, "sql3.freemysqlhosting.net","sql3270374","F6XyUAJqum","sql3270374", 3306, NULL, 0)==NULL){
+		cout << "not connected" << endl;
 	}
 	else{
-		cout << "NOT null" << endl;
+		cout << "connected?" << endl;
+	}
+	if(mysql_query(con, "INSERT INTO shots (radius, sinus, quarter, value) VALUES (12, 5.5, 1, 9.7);")){
+		cout << "db created?" << endl;
 	}
 	
 	
-	
+	mysql_close(con);
 
 
 	Destroyer();
