@@ -8,7 +8,8 @@
 using namespace std;
 using namespace cv;
 #define LED 23
-#define SERVO 17
+#define SERVO1 17
+#define SERVO2 18
 #define WIDTH 500
 #define HEIGHT 500
 
@@ -23,7 +24,8 @@ void Setup() {
 	DisplayInfo("Konfigurowanie programu");
 	gpioInitialise();
 	gpioSetMode(LED, PI_OUTPUT);
-	gpioSetMode(SERVO, PI_OUTPUT);
+	gpioSetMode(SERVO1, PI_OUTPUT);
+	gpioSetMode(SERVO2, PI_OUTPUT);
 }
 
 void TurnLed(bool status) {
@@ -265,7 +267,17 @@ vector<double> CalculateHoleCoords() {
 	return result;
 }
 
+void RewindBelt(int distance){
+	int janosik = 19000; //czas przewinięcia 1mm taśmy.
+	gpioPWM(SERVO1, 10);
+	gpioPWM(SERVO2, 10);
+	usleep(janosik*distance);
+	gpioPWM(SERVO1, 0);
+	gpioPWM(SERVO2, 0);
+}
+
 void Destroyer() {
+	DisplayInfo("Zamykanie")
 	gpioTerminate();
 }
 
@@ -285,7 +297,7 @@ int main(int, char**)
 		return -1;
 	}
 
-	/*
+	
 	cornerPoints = CalibrateTarget(cap);
 	cap >> frame;
 	emptyTarget = TrasnformImage(frame, cornerPoints);
@@ -297,15 +309,13 @@ int main(int, char**)
 			cout << lastDetectedHole[0] << endl << lastDetectedHole[1] << endl;
 			//TODO wywołaj calculateHoleCoords():
 			strike = CalculateHoleCoords();
+			RewindBelt(100);
 		}
 
 	} while (true);
 
-	*/
-
-
-	gpioPWM(SERVO, 192); /* 192/255 = 75% */
-
+	
+	
 
 
 	Destroyer();
