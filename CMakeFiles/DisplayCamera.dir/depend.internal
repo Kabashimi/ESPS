@@ -3,6 +3,13 @@
 
 CMakeFiles/DisplayCamera.dir/DisplayCamera.cpp.o
  /home/pi/Documents/Projekt_ESPS/ESPS/DisplayCamera.cpp
+ /usr/include/mysql/my_alloc.h
+ /usr/include/mysql/my_list.h
+ /usr/include/mysql/mysql.h
+ /usr/include/mysql/mysql_com.h
+ /usr/include/mysql/mysql_time.h
+ /usr/include/mysql/mysql_version.h
+ /usr/include/mysql/typelib.h
  /usr/local/include/opencv/cxcore.h
  /usr/local/include/opencv2/calib3d.hpp
  /usr/local/include/opencv2/calib3d/calib3d_c.h

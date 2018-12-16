@@ -5,7 +5,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <math.h>
-#include <mysql/mysql.h>
+#include <mysql.h>
 using namespace std;
 using namespace cv;
 #define LED 23
@@ -278,7 +278,7 @@ void RewindBelt(int distance){
 }
 
 void Destroyer() {
-	DisplayInfo("Zamykanie")
+	DisplayInfo("Zamykanie");
 	gpioTerminate();
 }
 
@@ -291,7 +291,7 @@ int main(int, char**)
 	vector<double> strike;
 
 	Setup();
-
+/*
 	VideoCapture cap(0); // open the default camera
 	if (!cap.isOpened()) {  // check if we "succeeded
 		DisplayInfo("Opening camera error");
@@ -314,7 +314,16 @@ int main(int, char**)
 		}
 
 	} while (true);
-
+*/
+	MYSQL *con;
+	con = mysql_init(NULL);
+	if(mysql_real_connect(con, "localhost","root","passwd",NULL, 0, NULL, 0)==NULL){
+		cout << "null" << endl;
+	}
+	else{
+		cout << "NOT null" << endl;
+	}
+	
 	
 	
 
