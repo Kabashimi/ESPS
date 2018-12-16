@@ -5,6 +5,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <math.h>
+#include <mysql/mysql.h>
 using namespace std;
 using namespace cv;
 #define LED 23

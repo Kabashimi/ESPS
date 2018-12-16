@@ -144,8 +144,14 @@ DisplayCamera_BINARY_DIR:STATIC=/home/pi/Documents/Projekt_ESPS/ESPS
 //Value Computed by CMake
 DisplayCamera_SOURCE_DIR:STATIC=/home/pi/Documents/Projekt_ESPS/ESPS
 
+//The directory containing a CMake configuration file for MySQL.
+MySQL_DIR:PATH=MySQL_DIR-NOTFOUND
+
 //The directory containing a CMake configuration file for OpenCV.
 OpenCV_DIR:PATH=/usr/local/share/OpenCV
+
+//Dependencies for target
+mysql_config_LIB_DEPENDS:STATIC=
 
 
 ########################
