@@ -16,6 +16,7 @@ using namespace cv;
 
 
 Vec3f lastDetectedHole;
+MYSQL *connection;
 
 void DisplayInfo(string data) {
 	cout << data << endl;
@@ -27,6 +28,11 @@ void Setup() {
 	gpioSetMode(LED, PI_OUTPUT);
 	gpioSetMode(SERVO1, PI_OUTPUT);
 	gpioSetMode(SERVO2, PI_OUTPUT);
+	connection = mysql_init(NULL);
+	if (mysql_real_connect(connection, "sql3.freemysqlhosting.net", "sql3270374", "F6XyUAJqum", "sql3270374", 3306, NULL, 0) == NULL) {
+		DisplayInfo("Database connection error!\nClosing now!");
+		return 0;
+	}
 }
 
 void TurnLed(bool status) {
@@ -277,8 +283,20 @@ void RewindBelt(int distance){
 	gpioPWM(SERVO2, 0);
 }
 
+void SaveResult(vector<double> strike) {
+	string query = "INSERT INTO shots (value, redius, sinus, quarter) VALUES (";
+	query += strike[0] + ",";
+	query += strike[1] + ",";
+	query += strike[2] + ",";
+	query += strike[3] + ");";
+	if (mysql_query(connection, query)) {
+		DisplayInfo("Result saved");
+	}
+}
+
 void Destroyer() {
 	DisplayInfo("Zamykanie");
+	mysql_close(connection);
 	gpioTerminate();
 }
 
@@ -291,7 +309,7 @@ int main(int, char**)
 	vector<double> strike;
 
 	Setup();
-/*
+
 	VideoCapture cap(0); // open the default camera
 	if (!cap.isOpened()) {  // check if we "succeeded
 		DisplayInfo("Opening camera error");
@@ -310,26 +328,11 @@ int main(int, char**)
 			cout << lastDetectedHole[0] << endl << lastDetectedHole[1] << endl;
 			//TODO wywołaj calculateHoleCoords():
 			strike = CalculateHoleCoords();
+			SaveResult(strike);
 			RewindBelt(100);
 		}
 
 	} while (true);
-*/
-	MYSQL *con;
-	con = mysql_init(NULL);
-	if(mysql_real_connect(con, "sql3.freemysqlhosting.net","sql3270374","F6XyUAJqum","sql3270374", 3306, NULL, 0)==NULL){
-		cout << "not connected" << endl;
-	}
-	else{
-		cout << "connected?" << endl;
-	}
-	if(mysql_query(con, "INSERT INTO shots (radius, sinus, quarter, value) VALUES (12, 5.5, 1, 9.7);")){
-		cout << "db created?" << endl;
-	}
-	
-	
-	mysql_close(con);
-
 
 	Destroyer();
 	return 0;
