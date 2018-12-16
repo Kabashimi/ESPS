@@ -8,27 +8,29 @@
 using namespace std;
 using namespace cv;
 #define LED 23
+#define SERVO 17
 #define WIDTH 500
 #define HEIGHT 500
 
 
 Vec3f lastDetectedHole;
 
-void displayInfo(string data) {
+void DisplayInfo(string data) {
 	cout << data << endl;
 }
 
-void setup() {
-	displayInfo("Konfigurowanie programu");
+void Setup() {
+	DisplayInfo("Konfigurowanie programu");
 	gpioInitialise();
-	gpioSetMode(23, PI_OUTPUT);
+	gpioSetMode(LED, PI_OUTPUT);
+	gpioSetMode(SERVO, PI_OUTPUT);
 }
 
-void turnLed(bool status) {
+void TurnLed(bool status) {
 	gpioWrite(LED, status);
 }
 
-vector<Vec3f> sortEdgePoints(vector<Vec3f> input) {
+vector<Vec3f> SortEdgePoints(vector<Vec3f> input) {
 	vector<Vec3f> output;
 	double max = 0;
 	int maxid;
@@ -68,17 +70,17 @@ vector<Vec3f> sortEdgePoints(vector<Vec3f> input) {
 
 }
 
-vector<Vec3f> calibrateTarget(VideoCapture cap) {
+vector<Vec3f> CalibrateTarget(VideoCapture cap) {
 	Mat frame1;
 	Mat frame2;
 	Mat diff;
 	vector<Vec3f> circles;
 
 	do {
-		turnLed(true);
+		TurnLed(true);
 		usleep(1000000);
 		cap >> frame1;
-		turnLed(false);
+		TurnLed(false);
 		usleep(1000000);
 		cap >> frame2;
 		absdiff(frame1, frame2, diff);
@@ -89,10 +91,10 @@ vector<Vec3f> calibrateTarget(VideoCapture cap) {
 
 		GaussianBlur(diff, diff, Size(7, 7), 4, 4);
 		HoughCircles(diff, circles, CV_HOUGH_GRADIENT, 1, 100, 30, 20, 10, 20);
-		displayInfo("Kalibrowanie tarczy, wykrytych punktów: " + to_string(circles.size()));
+		DisplayInfo("Kalibrowanie tarczy, wykrytych punktów: " + to_string(circles.size()));
 	} while (circles.size() != 4);
 
-	circles = sortEdgePoints(circles);
+	circles = SortEdgePoints(circles);
 
 	//Display detected circles
 	for (size_t i = 0; i < circles.size(); i++) {
@@ -125,7 +127,7 @@ vector<Vec3f> calibrateTarget(VideoCapture cap) {
 	//points order: top-left, top-right, bottom-right, bottom-left (clockwise)
 }
 
-Mat trasnformImage(Mat src, vector<Vec3f> points) {
+Mat TrasnformImage(Mat src, vector<Vec3f> points) {
 	Mat dst = Mat(HEIGHT, WIDTH, src.type());
 	Point2f inputQuad[4];
 	Point2f outputQuad[4];
@@ -263,7 +265,7 @@ vector<double> CalculateHoleCoords() {
 	return result;
 }
 
-void destroyer() {
+void Destroyer() {
 	gpioTerminate();
 }
 
@@ -275,22 +277,22 @@ int main(int, char**)
 	Mat frame;
 	vector<double> strike;
 
-	setup();
+	Setup();
 
 	VideoCapture cap(0); // open the default camera
 	if (!cap.isOpened()) {  // check if we "succeeded
-		displayInfo("Opening camera error");
+		DisplayInfo("Opening camera error");
 		return -1;
 	}
 
-	cornerPoints = calibrateTarget(cap);
-	//TODO make sure points are in counterclock order!
+	/*
+	cornerPoints = CalibrateTarget(cap);
 	cap >> frame;
-	emptyTarget = trasnformImage(frame, cornerPoints);
+	emptyTarget = TrasnformImage(frame, cornerPoints);
 
 	do {
 		cap >> frame;
-		actualFrame = trasnformImage(frame, cornerPoints);
+		actualFrame = TrasnformImage(frame, cornerPoints);
 		if (FindHole(actualFrame)) {
 			cout << lastDetectedHole[0] << endl << lastDetectedHole[1] << endl;
 			//TODO wywołaj calculateHoleCoords():
@@ -299,8 +301,13 @@ int main(int, char**)
 
 	} while (true);
 
+	*/
 
 
-	destroyer();
+	gpioPWM(SERVO, 192); /* 192/255 = 75% */
+
+
+
+	Destroyer();
 	return 0;
 }
