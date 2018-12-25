@@ -289,12 +289,17 @@ void RewindBelt(int distance){
 }
 
 void SaveResult(vector<double> strike) {
+	ostringstream strs;
 	string query = "INSERT INTO shots (value, redius, sinus, quarter) VALUES (";
-	query += strike[0] + ",";
-	query += strike[1] + ",";
-	query += strike[2] + ",";
-	query += strike[3] + ");";
-	if (mysql_query(connection, query)) {
+	strs << strike[0];
+	query += strs.str() + ",";
+	strs << strike[1];
+	query += strs.str() + ",";
+	strs << strike[2];
+	query += strs.str() + ",";
+	strs << strike[3];
+	query += strs.str() + ",";
+	if (mysql_query(connection, query.c_str())) {
 		DisplayInfo("Result saved");
 	}
 }
