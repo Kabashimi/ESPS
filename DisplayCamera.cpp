@@ -28,11 +28,7 @@ void Setup() {
 	gpioSetMode(LED, PI_OUTPUT);
 	gpioSetMode(SERVO1, PI_OUTPUT);
 	gpioSetMode(SERVO2, PI_OUTPUT);
-	connection = mysql_init(NULL);
-	if (mysql_real_connect(connection, "sql3.freemysqlhosting.net", "sql3270374", "F6XyUAJqum", "sql3270374", 3306, NULL, 0) == NULL) {
-		DisplayInfo("Database connection error!\nClosing now!");
-		return 0;
-	}
+
 }
 
 void TurnLed(bool status) {
@@ -101,6 +97,7 @@ vector<Vec3f> CalibrateTarget(VideoCapture cap) {
 		GaussianBlur(diff, diff, Size(7, 7), 4, 4);
 		HoughCircles(diff, circles, CV_HOUGH_GRADIENT, 1, 100, 30, 20, 10, 20);
 		DisplayInfo("Kalibrowanie tarczy, wykrytych punktów: " + to_string(circles.size()));
+		
 	} while (circles.size() != 4);
 
 	circles = SortEdgePoints(circles);
@@ -238,7 +235,7 @@ vector<double> CalculateHoleCoords() {
 
 	//obliczanie promienia na tarczy 1x1
 	//wymaga sprawdzenia
-	radius = sqrt((pow(lastDetectedHole[0] - center_X)/WIDTH, 2) + pow((lastDetectedHole[1] - center_Y)/HEIGHT, 2));
+	radius = sqrt(pow((lastDetectedHole[0] - center_X)/WIDTH, 2) + pow((lastDetectedHole[1] - center_Y)/HEIGHT, 2));
 
 	if (radius > 0) {
 		//ustalenie ćwiartki
@@ -289,24 +286,34 @@ void RewindBelt(int distance){
 }
 
 void SaveResult(vector<double> strike) {
+		connection = mysql_init(NULL);
+	if (mysql_real_connect(connection, "sql3.freemysqlhosting.net", "sql3270374", "F6XyUAJqum", "sql3270374", 3306, NULL, 0) == NULL) {
+		DisplayInfo("Database connection error!\n");
+	}
 	ostringstream strs;
-	string query = "INSERT INTO shots (value, redius, sinus, quarter) VALUES (";
+	string query = "INSERT INTO shots (value, radius, sinus, quarter) VALUES (";
 	strs << strike[0];
-	query += strs.str() + ",";
+	query += strs.str() + ", ";
+	strs.str("");
 	strs << strike[1];
-	query += strs.str() + ",";
+	query += strs.str() + ", ";
+	strs.str("");
 	strs << strike[2];
-	query += strs.str() + ",";
+	query += strs.str() + ", ";
+	strs.str("");
 	strs << strike[3];
-	query += strs.str() + ",";
+	query += strs.str() + ");";
+	strs.str("");
 	if (mysql_query(connection, query.c_str())) {
 		DisplayInfo("Result saved");
+		DisplayInfo(query);
 	}
+	mysql_close(connection);
 }
 
 void Destroyer() {
 	DisplayInfo("Zamykanie");
-	mysql_close(connection);
+	
 	gpioTerminate();
 }
 
