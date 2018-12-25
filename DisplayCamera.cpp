@@ -97,7 +97,7 @@ vector<Vec3f> CalibrateTarget(VideoCapture cap) {
 		GaussianBlur(diff, diff, Size(7, 7), 4, 4);
 		HoughCircles(diff, circles, CV_HOUGH_GRADIENT, 1, 100, 30, 20, 10, 20);
 		DisplayInfo("Kalibrowanie tarczy, wykrytych punktów: " + to_string(circles.size()));
-		
+
 	} while (circles.size() != 4);
 
 	circles = SortEdgePoints(circles);
@@ -174,8 +174,7 @@ bool FindHole(Mat frame) {
 	HoughCircles(frame, circles, CV_HOUGH_GRADIENT, 1, 100, 30, 20, 10, 20);
 
 	//Display detected circles
-	
-	
+	/*
 	Point c(WIDTH / 2, HEIGHT / 2);
 	int r = 27.5/2;
 	circle(org, c,r, Scalar(255,255,0), 1,8,0);
@@ -185,7 +184,7 @@ bool FindHole(Mat frame) {
 	circle(org, c,r, Scalar(255,255,0), 1,8,0);
 	r = 102.5/2;
 	circle(org, c,r, Scalar(255,255,0), 1,8,0);
-	
+
 	for (size_t i = 0; i < circles.size(); i++) {
 		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
 		int radius = cvRound(circles[i][2]);
@@ -199,7 +198,7 @@ bool FindHole(Mat frame) {
 		imshow("target", org);
 		if (waitKey(30) >= 0) break;
 	}
-
+	*/
 
 	if (circles.size() > 0) {
 		lastDetectedHole = circles[0];
@@ -213,14 +212,13 @@ bool FindHole(Mat frame) {
 
 double CalculateValue(double radius) {
 	double maxValue = 10.9;
-	double vStep = WIDTH / 100; //stosunek rozmiaru tarczy w milimetrach i obrazu w pikselach
-	vStep = vStep/0.2; //odległość między kolejnymi punktami w milimatrach
+	double vStep = 0.2; //odległość między kolejnymi punktami w milimatrach
 	double tmp = ceil(radius / vStep);
 	double value = 10.9 - tmp;
-	cout << vStep <<endl;
+	cout << vStep << endl;
 	cout << tmp << endl;
-	if(value <0){
-		value =0;
+	if (value < 0) {
+		value = 0;
 	}
 	return value;
 }
@@ -231,6 +229,7 @@ vector<double> CalculateHoleCoords() {
 	double quarter;
 	double center_X = WIDTH / 2;
 	double center_Y = HEIGHT / 2;
+	double proportion = WIDTH / 100;
 
 
 	//obliczanie promienia na tarczy 1x1
@@ -239,16 +238,20 @@ vector<double> CalculateHoleCoords() {
 
 	if (radius > 0) {
 		//ustalenie ćwiartki
-		if (lastDetectedHole[0] > center_X && lastDetectedHole[1] < center_Y) {
+		if (lastDetectedHole[0] > center_X && lastDetectedHole[1] < center_Y)
+		{
 			quarter = 1;
 		}
-		if (lastDetectedHole[0] < center_X && lastDetectedHole[1] < center_Y) {
+		if (lastDetectedHole[0] < center_X && lastDetectedHole[1] < center_Y)
+		{
 			quarter = 2;
 		}
-		if (lastDetectedHole[0] < center_X && lastDetectedHole[1] > center_Y) {
+		if (lastDetectedHole[0] < center_X && lastDetectedHole[1] > center_Y)
+		{
 			quarter = 3;
 		}
-		if (lastDetectedHole[0] > center_X && lastDetectedHole[1] > center_Y) {
+		if (lastDetectedHole[0] > center_X && lastDetectedHole[1] > center_Y)
+		{
 			quarter = 4;
 		}
 
@@ -259,7 +262,7 @@ vector<double> CalculateHoleCoords() {
 		sinus = 0;
 		quarter = 1;
 	}
-
+	radius = radius * proportion;
 	double value = CalculateValue(radius);
 
 	vector<double> result;
@@ -276,7 +279,9 @@ vector<double> CalculateHoleCoords() {
 	return result;
 }
 
-void RewindBelt(int distance){
+void RewindBelt() {
+	double proportion = HEIGHT / 100;
+	int distance = (HEIGHT - lastDetectedHole[1]) / proportion;
 	int janosik = 19000; //czas przewinięcia 1mm taśmy.
 	gpioPWM(SERVO1, 10);
 	gpioPWM(SERVO2, 10);
@@ -286,7 +291,7 @@ void RewindBelt(int distance){
 }
 
 void SaveResult(vector<double> strike) {
-		connection = mysql_init(NULL);
+	connection = mysql_init(NULL);
 	if (mysql_real_connect(connection, "sql3.freemysqlhosting.net", "sql3270374", "F6XyUAJqum", "sql3270374", 3306, NULL, 0) == NULL) {
 		DisplayInfo("Database connection error!\n");
 	}
@@ -313,7 +318,7 @@ void SaveResult(vector<double> strike) {
 
 void Destroyer() {
 	DisplayInfo("Zamykanie");
-	
+
 	gpioTerminate();
 }
 
@@ -333,7 +338,7 @@ int main(int, char**)
 		return -1;
 	}
 
-	
+
 	cornerPoints = CalibrateTarget(cap);
 	cap >> frame;
 	emptyTarget = TrasnformImage(frame, cornerPoints);
@@ -345,7 +350,7 @@ int main(int, char**)
 			cout << lastDetectedHole[0] << endl << lastDetectedHole[1] << endl;
 			strike = CalculateHoleCoords();
 			SaveResult(strike);
-			RewindBelt(100);
+			RewindBelt();
 		}
 
 	} while (true);
