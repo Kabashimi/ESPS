@@ -157,6 +157,10 @@ Mat TrasnformImage(Mat src, vector<Vec3f> points) {
 	lambda = getPerspectiveTransform(inputQuad, outputQuad);
 	warpPerspective(src, dst, lambda, dst.size());
 
+	//need testing:
+	rotate(dst, src, ROTATE_90_COUNTERCLOCKWISE);
+	flip(src, dst, 1);
+
 	return dst;
 }
 
@@ -232,8 +236,9 @@ vector<double> CalculateHoleCoords() {
 	double center_Y = HEIGHT / 2;
 
 
-	//obliczanie promienia
-	radius = sqrt(pow(lastDetectedHole[0] - center_X, 2) + pow(lastDetectedHole[1] - center_Y, 2));
+	//obliczanie promienia na tarczy 1x1
+	//wymaga sprawdzenia
+	radius = sqrt((pow(lastDetectedHole[0] - center_X)/WIDTH, 2) + pow((lastDetectedHole[1] - center_Y)/HEIGHT, 2));
 
 	if (radius > 0) {
 		//ustalenie ćwiartki
@@ -326,7 +331,6 @@ int main(int, char**)
 		actualFrame = TrasnformImage(frame, cornerPoints);
 		if (FindHole(actualFrame)) {
 			cout << lastDetectedHole[0] << endl << lastDetectedHole[1] << endl;
-			//TODO wywołaj calculateHoleCoords():
 			strike = CalculateHoleCoords();
 			SaveResult(strike);
 			RewindBelt(100);
