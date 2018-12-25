@@ -235,7 +235,7 @@ vector<double> CalculateHoleCoords() {
 
 	//obliczanie promienia na tarczy 1x1
 	//wymaga sprawdzenia
-	radius = sqrt(pow((lastDetectedHole[0] - center_X)/WIDTH, 2) + pow((lastDetectedHole[1] - center_Y)/HEIGHT, 2));
+	radius = sqrt(pow(lastDetectedHole[0] - center_X, 2) + pow(lastDetectedHole[1] - center_Y, 2));
 
 	if (radius > 0) {
 		//ustalenie ćwiartki
