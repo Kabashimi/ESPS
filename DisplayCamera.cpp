@@ -98,6 +98,9 @@ vector<Vec3f> CalibrateTarget(VideoCapture cap) {
 		HoughCircles(diff, circles, CV_HOUGH_GRADIENT, 1, 100, 30, 20, 10, 20);
 		DisplayInfo("Kalibrowanie tarczy, wykrytych punktów: " + to_string(circles.size()));
 
+		
+	
+
 	} while (circles.size() != 4);
 
 	circles = SortEdgePoints(circles);
@@ -174,7 +177,7 @@ bool FindHole(Mat frame) {
 	HoughCircles(frame, circles, CV_HOUGH_GRADIENT, 1, 100, 30, 20, 10, 20);
 
 	//Display detected circles
-	/*
+	
 	Point c(WIDTH / 2, HEIGHT / 2);
 	int r = 27.5/2;
 	circle(org, c,r, Scalar(255,255,0), 1,8,0);
@@ -198,7 +201,7 @@ bool FindHole(Mat frame) {
 		imshow("target", org);
 		if (waitKey(30) >= 0) break;
 	}
-	*/
+	
 
 	if (circles.size() > 0) {
 		lastDetectedHole = circles[0];
@@ -212,9 +215,9 @@ bool FindHole(Mat frame) {
 
 double CalculateValue(double radius) {
 	double maxValue = 10.9;
-	double vStep = 0.2; //odległość między kolejnymi punktami w milimatrach
+	double vStep = 0.225; //odległość między kolejnymi punktami w milimatrach
 	double tmp = ceil(radius / vStep);
-	double value = 10.9 - tmp;
+	double value = 10.9 - tmp/10;
 	cout << vStep << endl;
 	cout << tmp << endl;
 	if (value < 0) {
@@ -262,7 +265,7 @@ vector<double> CalculateHoleCoords() {
 		sinus = 0;
 		quarter = 1;
 	}
-	radius = radius * proportion;
+	radius = radius / proportion;
 	double value = CalculateValue(radius);
 
 	vector<double> result;
